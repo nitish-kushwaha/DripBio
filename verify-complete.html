@@ -204,31 +204,38 @@
 
     onAuthStateChanged(auth, async user => {
       if (!user) {
-        // Not logged in — go to login
         window.location.href = '/login.html';
         return;
       }
       currentUser = user;
+      await checkAndShowState(user);
+    });
 
-      // Reload to get fresh emailVerified state from Firebase servers
+    // ── Central state checker — reusable after reload ──
+    async function checkAndShowState(user) {
+      // Always reload token to get truly fresh emailVerified from Firebase servers
       try { await user.reload(); } catch {}
 
-      if (!auth.currentUser.emailVerified) {
+      // Use auth.currentUser (latest object after reload)
+      const freshUser = auth.currentUser;
+      if (!freshUser) { window.location.href = '/login.html'; return; }
+
+      if (!freshUser.emailVerified) {
         showOnly(notVerifiedEl);
         return;
       }
 
-      // Email is verified — check if profile already completed
+      // Email IS verified — check Firestore for profile completion
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
+        const snap = await getDoc(doc(db, 'users', freshUser.uid));
         if (snap.exists() && snap.data().isVerified === true) {
           showOnly(doneEl);
           return;
         }
-      } catch { /* show form anyway */ }
+      } catch { /* show form anyway on Firestore error */ }
 
       showOnly(formEl);
-    });
+    }
 
     // ── Reload button (re-check after user clicks email link) ──
     document.getElementById('reload-btn')?.addEventListener('click', async () => {
@@ -236,10 +243,10 @@
       const btn = document.getElementById('reload-btn');
       btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Checking…';
       try {
-        await currentUser.reload();
-        if (auth.currentUser.emailVerified) {
-          showOnly(formEl);
-        } else {
+        // checkAndShowState handles reload + verified check + Firestore check
+        await checkAndShowState(currentUser);
+        // If still not verified, restore button
+        if (!auth.currentUser?.emailVerified) {
           showToast('Email not verified yet. Please click the link in your email.', 'error');
           btn.disabled = false;
           btn.textContent = "I've Clicked the Link — Continue";

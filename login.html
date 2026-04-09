@@ -60,10 +60,39 @@
     import { auth }       from '/js/firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // Already logged in → go to dashboard
-    onAuthStateChanged(auth, user => {
-      if (user) window.location.href = '/dashboard.html';
+    // Already logged in → smart redirect
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        await smartRedirect(user);
+      }
     });
+
+    async function smartRedirect(user) {
+      try { await user.reload(); } catch {}
+      const freshUser = auth.currentUser || user;
+
+      if (!freshUser.emailVerified) {
+        // Email not yet verified — send to email waiting page
+        window.location.href = '/email-sent.html';
+        return;
+      }
+
+      // Check Firestore for profile completion (isVerified flag)
+      try {
+        const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const { db } = await import('/js/firebase-config.js');
+        const snap = await getDoc(doc(db, 'users', freshUser.uid));
+        if (snap.exists() && snap.data().isVerified === true) {
+          window.location.href = '/dashboard.html';
+          return;
+        }
+        // Email verified but profile form not yet completed
+        window.location.href = '/verify-complete.html';
+      } catch {
+        // Firestore error — fall back to dashboard
+        window.location.href = '/dashboard.html';
+      }
+    }
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -77,8 +106,8 @@
       btn.innerHTML = '<span class="spinner"></span> Logging in…';
 
       try {
-        await logIn(email, password);
-        window.location.href = '/dashboard.html';
+        const user = await logIn(email, password);
+        await smartRedirect(user);
       } catch (err) {
         showToast(friendlyError(err.code), 'error');
         btn.disabled = false;
