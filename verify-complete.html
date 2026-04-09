@@ -306,8 +306,8 @@
         setTimeout(() => showOnly(doneEl), 1200);
 
       } catch (err) {
-        console.error(err);
-        showToast('Error saving details. Check Firestore rules.', 'error');
+        console.error("VERIFICATION ERROR:", err);
+        showToast('Error: ' + (err.message || 'Check Firestore rules.'), 'error');
         btn.disabled = false;
         btn.textContent = 'Complete Verification ✔️';
       }

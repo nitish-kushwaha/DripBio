@@ -17,12 +17,18 @@ service cloud.firestore {
       
       // Owner can update, but if they are verifying (isVerified == true), they MUST provide mandatory fields
       allow update: if request.auth != null && request.auth.uid == uid
-        && (request.resource.data.get('isVerified', false) == true
-            ? request.resource.data.keys().hasAll([
-                'mobileNumber', 'altMobileNumber', 'dateOfBirth', 
-                'gender', 'city', 'address'
-              ])
-            : true);
+        && (
+          (!('isVerified' in request.resource.data) || request.resource.data.isVerified == false) 
+          || 
+          (
+            'mobileNumber' in request.resource.data &&
+            'altMobileNumber' in request.resource.data &&
+            'dateOfBirth' in request.resource.data &&
+            'gender' in request.resource.data &&
+            'city' in request.resource.data &&
+            'address' in request.resource.data
+          )
+        );
       allow delete: if false;
 
       // Links subcollection
