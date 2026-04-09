@@ -717,7 +717,6 @@ body.page-profile {
   transition: all var(--transition-normal);
   display: block;
   position: relative;
-  overflow: hidden;
 }
 .profile-link-btn::before {
   content: '';
@@ -725,6 +724,7 @@ body.page-profile {
   background: var(--gradient-neon);
   opacity: 0;
   transition: opacity var(--transition-normal);
+  border-radius: inherit;
 }
 .profile-link-btn span { position: relative; z-index: 1; }
 .profile-link-btn:hover {
@@ -980,6 +980,7 @@ body.page-profile { font-family: var(--profile-font, var(--font-primary)); }
   text-transform: uppercase;
   letter-spacing: 0.08em;
   pointer-events: none;
+  z-index: 10;
 }
 @keyframes link-pulse {
   0%,100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.45), 0 0 12px rgba(168,85,247,0.15); }
