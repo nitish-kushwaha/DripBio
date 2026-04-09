@@ -27,17 +27,20 @@ const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 // ── Bootstrap ────────────────────────────────────────────────
 requireAuth(async (user) => {
-  currentUser    = user;
+  currentUser = user;
   try {
     currentProfile = await getUserProfile(user.uid);
   } catch (err) {
-    console.error('DripBio: Failed to load profile', err);
-    showToast('Could not load profile. Check Firestore rules.', 'error');
+    console.error('DripBio: Firestore read failed', err);
+    showToast('Could not reach database. Check Firestore rules!', 'error');
     return;
   }
 
+  // ── Orphaned account detection ──────────────────────────────
+  // This happens when: Auth account was created, but Firestore writes failed
+  // (usually because Firestore rules weren't set up before first signup).
   if (!currentProfile) {
-    showToast('Profile not found. Please sign up again.', 'error');
+    showOrphanedAccountError(user);
     return;
   }
 
@@ -45,6 +48,46 @@ requireAuth(async (user) => {
   bootstrapProfilePanel();
   subscribeLinks();
 });
+
+// ── Orphaned Account Handler ─────────────────────────────────
+function showOrphanedAccountError(user) {
+  document.querySelector('.dash-layout').innerHTML = `
+    <div style="
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      gap: 1rem;
+      padding: 2rem;
+    ">
+      <div style="font-size: 3rem;">⚠️</div>
+      <h2 style="font-size: 1.4rem;">Profile data not found</h2>
+      <p style="color: var(--text-secondary); max-width: 420px; font-size: 0.92rem; line-height: 1.7;">
+        Your account (<strong>${user.email}</strong>) was created, but the profile data is missing.
+        This usually happens when Firestore rules weren't set up before signup.
+        <br><br>
+        <strong>Fix:</strong> Set up your Firestore rules, then sign up again with a fresh account.
+      </p>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem;">
+        <button id="orphan-logout-btn" class="btn btn-primary">
+          Log Out & Re-Signup
+        </button>
+        <a href="https://console.firebase.google.com" target="_blank" class="btn btn-ghost">
+          Open Firebase Console 🔗
+        </a>
+      </div>
+    </div>
+  `;
+  document.getElementById('orphan-logout-btn')?.addEventListener('click', async () => {
+    await logOut();
+    window.location.href = '/signup.html';
+  });
+}
+
+
 
 // ── Navbar ───────────────────────────────────────────────────
 function bootstrapNavbar() {

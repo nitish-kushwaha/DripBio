@@ -1,0 +1,47 @@
+# ============================================================
+# DripBio.bond — Firestore Security Rules
+# Paste this ENTIRE block in:
+# Firebase Console → Firestore → Rules → Publish
+# ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Users collection ──────────────────────────────────────
+    // Anyone can read a profile (needed for public profile page)
+    // Only the account owner can write their own profile
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+
+      // Links subcollection
+      match /links/{linkId} {
+        allow read: if true;
+
+        // Only owner can add/remove links
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow delete: if request.auth != null && request.auth.uid == uid;
+
+        // Owner can do full update; anyone can increment 'clicks' only
+        allow update: if (request.auth != null && request.auth.uid == uid)
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
+      }
+    }
+
+    // ── Username index ────────────────────────────────────────
+    // Anyone can read (needed for availability check + public profile lookup)
+    // Authenticated users can create — but ONLY if the doc doesn't exist yet
+    // This enforces server-side uniqueness as a second layer
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && !exists(/databases/$(database)/documents/usernames/$(username));
+      allow update: if false;
+      allow delete: if false;
+    }
+
+  }
+}

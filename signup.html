@@ -109,11 +109,17 @@
       statusEl.textContent = '…';
       statusEl.className   = 'input-status status-checking';
 
-      usernameCheckTimer = setTimeout(async () => {
-        const available = await checkUsernameAvailable(val);
-        usernameAvailable = available;
-        statusEl.textContent = available ? '✓ Available!' : '✗ Taken';
-        statusEl.className   = `input-status ${available ? 'status-available' : 'status-taken'}`;
+    usernameCheckTimer = setTimeout(async () => {
+        try {
+          const available = await checkUsernameAvailable(val);
+          usernameAvailable = available;
+          statusEl.textContent = available ? '✓ Available!' : '✗ Taken';
+          statusEl.className   = `input-status ${available ? 'status-available' : 'status-taken'}`;
+        } catch {
+          statusEl.textContent = '? Try again';
+          statusEl.className   = 'input-status status-checking';
+          usernameAvailable    = false;
+        }
       }, 500);
     });
 
