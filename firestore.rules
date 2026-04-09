@@ -1,6 +1,6 @@
 # ============================================================
-# DripBio.bond — Firestore Security Rules
-# Paste this ENTIRE block in:
+# DripBio.bond — Firestore Security Rules (v3)
+# Paste ALL of this in:
 # Firebase Console → Firestore → Rules → Publish
 # ============================================================
 
@@ -9,10 +9,10 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── Users collection ──────────────────────────────────────
-    // Anyone can read a profile (needed for public profile page)
-    // Only the account owner can write their own profile
     match /users/{uid} {
       allow read: if true;
+
+      // Owner can create / update their own doc
       allow create: if request.auth != null && request.auth.uid == uid;
       allow update: if request.auth != null && request.auth.uid == uid;
       allow delete: if false;
@@ -20,23 +20,19 @@ service cloud.firestore {
       // Links subcollection
       match /links/{linkId} {
         allow read: if true;
-
-        // Only owner can add/remove links
         allow create: if request.auth != null && request.auth.uid == uid;
         allow delete: if request.auth != null && request.auth.uid == uid;
 
-        // Owner can do full update; anyone can increment 'clicks' only
+        // Owner can update fully; anyone can increment 'clicks' only
         allow update: if (request.auth != null && request.auth.uid == uid)
           || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
       }
     }
 
     // ── Username index ────────────────────────────────────────
-    // Anyone can read (needed for availability check + public profile lookup)
-    // Authenticated users can create — but ONLY if the doc doesn't exist yet
-    // This enforces server-side uniqueness as a second layer
     match /usernames/{username} {
       allow read: if true;
+      // Only allow create if username doc doesn't exist yet (server-side uniqueness)
       allow create: if request.auth != null
         && !exists(/databases/$(database)/documents/usernames/$(username));
       allow update: if false;

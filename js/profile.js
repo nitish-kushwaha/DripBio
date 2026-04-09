@@ -69,6 +69,7 @@ const username = window.location.pathname.split('/').filter(Boolean)[0]?.toLower
     }
 
     applySettings(profile);
+    updateOgTags(profile);
     renderProfile(profile, links, uid);
     hide('profile-loading'); show('profile-wrapper');
 
@@ -81,6 +82,27 @@ const username = window.location.pathname.split('/').filter(Boolean)[0]?.toLower
     hide('profile-loading'); show('profile-not-found');
   }
 })();
+
+// ── Update Open Graph / Twitter Card tags dynamically ────────
+// Works for X/Twitter, Discord, Telegram; WhatsApp/Facebook need server-side rendering.
+function updateOgTags(profile) {
+  const { displayName, username, bio, avatarStyle='lorelei' } = profile;
+  const name    = displayName || username;
+  const imgUrl  = `https://api.dicebear.com/7.x/${avatarStyle}/png?seed=${encodeURIComponent(username)}&size=400&backgroundColor=0f0f0f`;
+  const pageUrl = window.location.href;
+  const desc    = bio ? `${bio} — links on DripBio.bond` : `Check out ${name}'s links on DripBio.bond!`;
+
+  const sm = (sel, val) => { const el=document.querySelector(sel); if(el) el.setAttribute('content',val); };
+
+  sm('meta[name="description"]',            desc);
+  sm('meta[property="og:title"]',           `${name} | DripBio`);
+  sm('meta[property="og:description"]',     desc);
+  sm('meta[property="og:image"]',           imgUrl);
+  sm('meta[property="og:url"]',             pageUrl);
+  sm('meta[name="twitter:title"]',          `${name} | DripBio`);
+  sm('meta[name="twitter:description"]',    desc);
+  sm('meta[name="twitter:image"]',          imgUrl);
+}
 
 // ── Apply Theme / Font / Button Settings ──────────────────────
 function applySettings(profile) {
@@ -127,7 +149,13 @@ function renderProfile(profile, links, uid) {
   // Name & Bio
   const nameEl = document.getElementById('profile-name');
   const bioEl  = document.getElementById('profile-bio');
-  if (nameEl) nameEl.textContent = displayName||uname;
+  if (nameEl) {
+    // Wrap name + optional verified badge in a flex row
+    const badge = profile.isVerified
+      ? `<span class="verified-badge" title="Verified DripBio user">✓</span>`
+      : '';
+    nameEl.innerHTML = `<span class="profile-name-row">${esc(displayName||uname)}${badge}</span>`;
+  }
   if (bioEl)  { bioEl.textContent = bio||''; bioEl.style.display = bio ? '' : 'none'; }
 
   // Social icons bar
@@ -147,11 +175,18 @@ function renderProfile(profile, links, uid) {
     if (!links.length) {
       linksEl.innerHTML=`<div style="color:var(--text-muted);text-align:center;font-size:.9rem;padding:2rem 0">No links yet 🌙</div>`;
     } else {
-      linksEl.innerHTML = links.map(l=>`
-        <a class="profile-link-btn" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
-           data-link-id="${l.id}" data-uid="${uid}">
-          <span>${esc(l.title)}</span>
-        </a>`).join('');
+      linksEl.innerHTML = links.map(l => {
+        const hotBadge = l.highlight
+          ? `<span class="link-hot-badge">⚡ Featured</span>`
+          : '';
+        return `
+          <a class="profile-link-btn ${l.highlight ? 'link-highlighted' : ''}"
+             href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+             data-link-id="${l.id}" data-uid="${uid}">
+            ${hotBadge}
+            <span>${esc(l.title)}</span>
+          </a>`;
+      }).join('');
 
       linksEl.querySelectorAll('.profile-link-btn').forEach(btn => {
         btn.addEventListener('click', () => trackClick(uid, btn.dataset.linkId));

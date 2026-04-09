@@ -7,7 +7,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   doc, setDoc, getDoc, runTransaction
@@ -108,7 +109,23 @@ export async function signUp(username, email, password) {
     throw err;
   }
 
+  // Send verification email (non-blocking — don't fail signup if this errors)
+  try {
+    await sendEmailVerification(cred.user, {
+      url: `${window.location.origin}/verify-complete.html`,
+      handleCodeInApp: false,
+    });
+  } catch (e) { console.warn('Verification email failed:', e.message); }
+
   return cred.user;
+}
+
+// ── Resend Verification Email ─────────────────────────────────
+export async function resendVerificationEmail(user) {
+  await sendEmailVerification(user, {
+    url: `${window.location.origin}/verify-complete.html`,
+    handleCodeInApp: false,
+  });
 }
 
 // ── Log In ───────────────────────────────────────────────────

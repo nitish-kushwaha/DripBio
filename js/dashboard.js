@@ -3,7 +3,7 @@
 // ============================================================
 
 import { auth, db } from './firebase-config.js';
-import { requireAuth, getUserProfile, showToast, logOut } from './auth.js';
+import { requireAuth, getUserProfile, showToast, logOut, resendVerificationEmail } from './auth.js';
 import {
   doc, updateDoc, collection, addDoc, deleteDoc,
   onSnapshot, query, orderBy, writeBatch
@@ -60,7 +60,56 @@ requireAuth(async user => {
   bootstrapProfile();
   bootstrapCustomize();
   subscribeLinks();
+
+  // Show email-not-verified banner if needed
+  try {
+    await auth.currentUser.reload();
+    if (!auth.currentUser.emailVerified) showEmailBanner();
+  } catch { /* non-blocking */ }
 });
+
+// ── Email Verification Banner ─────────────────────────
+function showEmailBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'email-verify-banner';
+  banner.style.cssText = `
+    position:sticky;top:0;z-index:100;
+    background:linear-gradient(90deg,rgba(245,158,11,0.15),rgba(245,158,11,0.08));
+    border-bottom:1px solid rgba(245,158,11,0.35);
+    padding:0.65rem 1.5rem;
+    display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+  `;
+  banner.innerHTML = `
+    <span style="font-size:1.1rem">⚠️</span>
+    <span style="flex:1;font-size:0.86rem;color:#fbbf24;font-weight:500">
+      Your email is not verified. Please check your inbox and click the verification link.
+    </span>
+    <a href="/verify-complete.html" style="padding:0.35rem 0.9rem;border-radius:9999px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;font-size:0.8rem;font-weight:600;white-space:nowrap">
+      Verify Now →
+    </a>
+    <button id="banner-resend" style="padding:0.35rem 0.9rem;border-radius:9999px;background:transparent;border:1px solid rgba(245,158,11,0.3);color:#fbbf24;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap">
+      Resend Email
+    </button>
+  `;
+  document.body.insertBefore(banner, document.body.firstChild);
+
+  let cooldown = false;
+  document.getElementById('banner-resend')?.addEventListener('click', async () => {
+    if (cooldown) return;
+    try {
+      await resendVerificationEmail(auth.currentUser);
+      showToast('Verification email sent! 📧', 'success');
+      cooldown = true;
+      const btn = document.getElementById('banner-resend');
+      if (btn) { btn.disabled=true; btn.textContent='Sent! (60s)'; }
+      setTimeout(() => {
+        cooldown=false;
+        const b = document.getElementById('banner-resend');
+        if (b) { b.disabled=false; b.textContent='Resend Email'; }
+      }, 60000);
+    } catch { showToast('Please wait before resending.','error'); }
+  });
+}
 
 // ── Orphaned Account ─────────────────────────────────────────
 function showOrphanError(user) {
@@ -303,6 +352,7 @@ async function addLink() {
   const titEl = $('link-title-input'), urlEl = $('link-url-input');
   const title = titEl?.value.trim();
   let   url   = urlEl?.value.trim();
+  const highlight = $('link-highlight-toggle')?.checked || false;
   if (!title||!url) { showToast('Fill in title and URL.','error'); return; }
   if (!/^https?:\/\//i.test(url)) url='https://'+url;
 
@@ -310,8 +360,9 @@ async function addLink() {
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
   try {
     await addDoc(collection(db,'users',currentUser.uid,'links'),
-      { title, url, clicks:0, order:links.length, createdAt:new Date().toISOString() });
+      { title, url, clicks:0, order:links.length, highlight, createdAt:new Date().toISOString() });
     titEl.value=''; urlEl.value='';
+    if($('link-highlight-toggle')) $('link-highlight-toggle').checked=false;
     showToast('Link added! 🔗','success');
   } catch { showToast('Error adding link.','error'); }
   finally { btn.disabled=false; btn.textContent='+ Add Link'; }
@@ -326,6 +377,7 @@ function renderLinks() {
   el.innerHTML = links.map(l=>`
     <div class="link-item" data-id="${l.id}">
       <span class="drag-handle" title="Drag to reorder">⠿</span>
+      ${l.highlight ? '<span class="link-hot-dot" title="Highlighted"></span>' : ''}
       <div class="link-item-info">
         <div class="link-item-title">${esc(l.title)}</div>
         <div class="link-item-url">${esc(l.url)}</div>
@@ -372,6 +424,10 @@ window.openEditModal = linkId => {
     <div class="modal-form">
       <div class="form-group"><label>Title</label><input id="edit-title" type="text" value="${esc(link.title)}"></div>
       <div class="form-group"><label>URL</label><input id="edit-url" type="url" value="${esc(link.url)}"></div>
+      <label class="highlight-row" style="margin:4px 0">
+        <span class="toggle-sw"><input type="checkbox" id="edit-highlight" ${link.highlight?'checked':''}><span class="toggle-sl"></span></span>
+        ⚡ Highlight this link
+      </label>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
         <button class="btn btn-primary" onclick="saveEditedLink('${linkId}')">Save</button>
@@ -383,10 +439,11 @@ window.openEditModal = linkId => {
 window.closeEditModal = () => $('edit-modal')?.remove();
 window.saveEditedLink = async linkId => {
   const title=$('edit-title')?.value.trim(); let url=$('edit-url')?.value.trim();
+  const highlight = $('edit-highlight')?.checked || false;
   if(!title||!url){showToast('Both fields required.','error');return;}
   if(!/^https?:\/\//i.test(url)) url='https://'+url;
   try {
-    await updateDoc(doc(db,'users',currentUser.uid,'links',linkId),{title,url});
+    await updateDoc(doc(db,'users',currentUser.uid,'links',linkId),{title,url,highlight});
     closeEditModal(); showToast('Updated! ✅','success');
   } catch { showToast('Error.','error'); }
 };
@@ -428,13 +485,17 @@ function updatePreview() {
       : '';
   }
 
-  // Links with button style applied
+  // Links with button style + highlight applied
   const linksEl = $('preview-links');
   if (linksEl) {
     const shapeClass = `prev-link-${btnShape}`;
     const fillClass  = `prev-link-${btnFill}`;
     linksEl.innerHTML = links.length
-      ? links.map(l=>`<div class="preview-link ${shapeClass} ${fillClass}" style="font-family:'${font}',sans-serif">${esc(l.title)}</div>`).join('')
+      ? links.map(l=>`
+          <div class="preview-link ${shapeClass} ${fillClass} ${l.highlight?'prev-link-hot':''}" style="font-family:'${font}',sans-serif;position:relative">
+            ${l.highlight ? '<span style="position:absolute;top:-6px;right:8px;font-size:0.45rem;color:var(--neon-purple);background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);border-radius:9999px;padding:1px 5px">HOT</span>' : ''}
+            ${esc(l.title)}
+          </div>`).join('')
       : `<div style="font-size:.6rem;color:var(--text-muted);text-align:center">Links appear here</div>`;
   }
 }

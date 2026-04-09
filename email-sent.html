@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check Your Email — DripBio.bond</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .email-card {
+      max-width: 440px; width: 100%;
+      padding: 2.5rem;
+      animation: fadeInUp 0.5s ease;
+    }
+    .email-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: float 3s ease-in-out infinite;
+    }
+    .email-address {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0.45rem 1rem;
+      background: rgba(168,85,247,0.1);
+      border: 1px solid rgba(168,85,247,0.3);
+      border-radius: 9999px;
+      font-size: 0.88rem; font-weight: 600;
+      color: var(--neon-purple);
+      margin: 1rem 0;
+      word-break: break-all;
+    }
+    .steps-list {
+      text-align: left;
+      display: flex; flex-direction: column; gap: 0.65rem;
+      margin: 1.5rem 0;
+      padding: 1.2rem;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+    }
+    .step-row {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      font-size: 0.88rem; color: var(--text-secondary);
+    }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: var(--gradient-neon);
+      color: white; font-size: 0.7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .resend-timer {
+      font-size: 0.82rem; color: var(--text-muted); margin-top: 0.5rem;
+    }
+    .divider {
+      width: 100%; height: 1px;
+      background: var(--border-glass); margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body class="page-auth">
+
+  <div class="glass email-card">
+    <div style="text-align:center">
+      <div class="email-icon">📬</div>
+      <h1 style="font-size:1.6rem;margin-bottom:0.5rem">Check your inbox!</h1>
+      <p style="color:var(--text-secondary);font-size:0.9rem">
+        We sent a verification link to
+      </p>
+      <div class="email-address" id="user-email">your email</div>
+    </div>
+
+    <div class="steps-list">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <span>Open the email from <strong>Firebase / DripBio</strong></span>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <span>Click <strong>"Verify email address"</strong> in the email</span>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <span>You'll be redirected to fill in your profile details</span>
+      </div>
+      <div class="step-row">
+        <div class="step-num">4</div>
+        <span>Done — your <strong>✔️ Verified badge</strong> appears on your profile!</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary w-full" id="resend-btn">
+      Resend Email
+    </button>
+    <div class="resend-timer" id="resend-timer" style="text-align:center;display:none"></div>
+
+    <div class="divider"></div>
+
+    <div style="text-align:center;display:flex;flex-direction:column;gap:0.75rem">
+      <a href="/dashboard.html" class="btn btn-ghost w-full">
+        Already verified? Go to Dashboard →
+      </a>
+      <button id="logout-link"
+        style="background:none;border:none;color:var(--text-muted);font-size:0.82rem;cursor:pointer;font-family:var(--font-primary)">
+        Sign out / use different account
+      </button>
+    </div>
+
+    <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:1rem">
+      Didn't get it? Check your spam folder.
+    </p>
+  </div>
+
+  <script type="module">
+    import { auth } from '/js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { resendVerificationEmail, logOut, showToast } from '/js/auth.js';
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, user => {
+      if (!user) { window.location.href = '/signup.html'; return; }
+      currentUser = user;
+      const emailEl = document.getElementById('user-email');
+      if (emailEl) emailEl.textContent = user.email;
+
+      // If already verified, skip to dashboard
+      if (user.emailVerified) { window.location.href = '/verify-complete.html'; }
+    });
+
+    // ── Resend with 60s cooldown ──
+    const resendBtn   = document.getElementById('resend-btn');
+    const timerEl     = document.getElementById('resend-timer');
+    let   cooldown    = null;
+
+    function startCooldown() {
+      let secs = 60;
+      resendBtn.disabled = true;
+      timerEl.style.display = '';
+      cooldown = setInterval(() => {
+        secs--;
+        timerEl.textContent = `Resend available in ${secs}s`;
+        if (secs <= 0) {
+          clearInterval(cooldown);
+          resendBtn.disabled = false;
+          timerEl.style.display = 'none';
+        }
+      }, 1000);
+    }
+
+    resendBtn.addEventListener('click', async () => {
+      if (!currentUser) return;
+      try {
+        await resendVerificationEmail(currentUser);
+        showToast('Verification email sent! 📬', 'success');
+        startCooldown();
+      } catch (err) {
+        if (err.code === 'auth/too-many-requests') {
+          showToast('Too many requests. Please wait a minute.', 'error');
+        } else {
+          showToast(err.message || 'Failed to send email.', 'error');
+        }
+      }
+    });
+
+    document.getElementById('logout-link')?.addEventListener('click', async () => {
+      await logOut();
+      window.location.href = '/signup.html';
+    });
+  </script>
+
+</body>
+</html>

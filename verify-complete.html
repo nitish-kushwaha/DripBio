@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete Your Profile — DripBio.bond</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body.page-auth { padding: 2rem 1rem; }
+    .verify-card {
+      max-width: 500px; width: 100%;
+      padding: 2.5rem;
+      animation: fadeInUp 0.45s ease;
+    }
+    .verify-header { text-align: center; margin-bottom: 2rem; }
+    .badge-preview {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      box-shadow: 0 0 30px rgba(59,130,246,0.5);
+      font-size: 1.8rem; color: white;
+      margin: 0 auto 1rem;
+      animation: badge-glow 2.4s ease-in-out infinite;
+    }
+    @keyframes badge-glow {
+      0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.5); }
+      50% { box-shadow: 0 0 45px rgba(59,130,246,0.9), 0 0 15px rgba(6,182,212,0.5); }
+    }
+    .section-divider {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.1em; margin: 1.5rem 0 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border-glass);
+    }
+    .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+    .optional-tag {
+      font-size: 0.65rem; font-weight: 600; color: var(--text-muted);
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);
+      border-radius: 4px; padding: 1px 5px; margin-left: 4px;
+      text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle;
+    }
+    select option { background: #1a1a2e; color: #f1f5f9; }
+
+    /* Not verified state */
+    #not-verified-state {
+      text-align: center; padding: 1.5rem 0;
+      display: none;
+    }
+    /* Loading state */
+    #loading-state {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.75rem; padding: 3rem; color: var(--text-muted);
+    }
+    /* Form state */
+    #form-state { display: none; }
+    /* Done state */
+    #done-state { text-align: center; padding: 1rem 0; display: none; }
+  </style>
+</head>
+<body class="page-auth">
+
+  <div class="glass verify-card">
+
+    <!-- Loading -->
+    <div id="loading-state">
+      <span class="spinner"></span>
+      <span>Checking verification…</span>
+    </div>
+
+    <!-- Email not yet verified -->
+    <div id="not-verified-state">
+      <div style="font-size:3rem;margin-bottom:1rem">📧</div>
+      <h2 style="font-size:1.4rem;margin-bottom:0.5rem">Email not verified yet</h2>
+      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem">
+        Please click the link in your email first, then return here.
+      </p>
+      <button id="reload-btn" class="btn btn-primary w-full">
+        I've Clicked the Link — Continue
+      </button>
+      <a href="/email-sent.html" class="btn btn-ghost w-full" style="margin-top:0.75rem">
+        ← Back to Email Page
+      </a>
+    </div>
+
+    <!-- Profile Complete Form -->
+    <div id="form-state">
+      <div class="verify-header">
+        <div class="badge-preview">✓</div>
+        <h1 style="font-size:1.5rem;margin-bottom:0.4rem">One Last Step! 🎉</h1>
+        <p style="color:var(--text-secondary);font-size:0.88rem">
+          Your email is verified! Fill in your details to earn your
+          <strong style="color:#3b82f6">✔️ Verified Badge</strong>
+        </p>
+      </div>
+
+      <form id="verify-form" novalidate>
+
+        <!-- === Required Details === -->
+        <div class="section-divider">Required</div>
+
+        <div class="form-group" style="margin-bottom:1rem">
+          <label for="mobile-input">
+            Mobile Number
+          </label>
+          <input id="mobile-input" type="tel" placeholder="+91 98765 43210"
+            pattern="[+]?[0-9\s\-]{8,15}" maxlength="16" required />
+          <p class="field-hint">Used for account recovery only. Never shared publicly.</p>
+        </div>
+
+        <!-- === Optional Details === -->
+        <div class="section-divider">Optional</div>
+
+        <div style="display:flex;flex-direction:column;gap:1rem">
+
+          <div class="form-group">
+            <label for="alt-mobile-input">
+              Alternate Mobile <span class="optional-tag">optional</span>
+            </label>
+            <input id="alt-mobile-input" type="tel" placeholder="+91 91234 56789"
+              pattern="[+]?[0-9\s\-]{8,15}" maxlength="16" />
+          </div>
+
+          <div class="form-group">
+            <label for="dob-input">
+              Date of Birth <span class="optional-tag">optional</span>
+            </label>
+            <input id="dob-input" type="date" />
+          </div>
+
+          <div class="form-group">
+            <label for="gender-select">
+              Gender <span class="optional-tag">optional</span>
+            </label>
+            <select id="gender-select">
+              <option value="">Select…</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="non-binary">Non-binary</option>
+              <option value="prefer-not">Prefer not to say</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="city-input">
+              City / Location <span class="optional-tag">optional</span>
+            </label>
+            <input id="city-input" type="text" placeholder="Mumbai, India" maxlength="80" />
+          </div>
+
+          <div class="form-group">
+            <label for="address-input">
+              Full Address <span class="optional-tag">optional</span>
+            </label>
+            <textarea id="address-input" placeholder="Street, City, State, PIN…" maxlength="300" rows="3"></textarea>
+            <p class="field-hint">Stored privately — never shown on your public profile.</p>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full" id="submit-btn" style="margin-top:1.5rem">
+          Complete Verification ✔️
+        </button>
+
+        <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem">
+          🔒 Your private details are stored securely and never shown publicly.
+        </p>
+
+      </form>
+    </div>
+
+    <!-- Already done -->
+    <div id="done-state">
+      <div style="font-size:4rem;margin-bottom:1rem">🎊</div>
+      <h2 style="font-size:1.5rem;margin-bottom:0.5rem">You're Verified!</h2>
+      <p style="color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.9rem">
+        Your <strong style="color:#3b82f6">✔️ Verified Badge</strong> is now live on your DripBio profile.
+      </p>
+      <a href="/dashboard.html" class="btn btn-primary w-full">Go to Dashboard 🚀</a>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { auth, db } from '/js/firebase-config.js';
+    import { onAuthStateChanged }  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showToast, logOut } from '/js/auth.js';
+
+    // ── State elements ──
+    const loadingEl     = document.getElementById('loading-state');
+    const notVerifiedEl = document.getElementById('not-verified-state');
+    const formEl        = document.getElementById('form-state');
+    const doneEl        = document.getElementById('done-state');
+
+    const showOnly = el => {
+      [loadingEl, notVerifiedEl, formEl, doneEl].forEach(e => e.style.display='none');
+      el.style.display='';
+    };
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        // Not logged in — go to login
+        window.location.href = '/login.html';
+        return;
+      }
+      currentUser = user;
+
+      // Reload to get fresh emailVerified state from Firebase servers
+      try { await user.reload(); } catch {}
+
+      if (!auth.currentUser.emailVerified) {
+        showOnly(notVerifiedEl);
+        return;
+      }
+
+      // Email is verified — check if profile already completed
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists() && snap.data().isVerified === true) {
+          showOnly(doneEl);
+          return;
+        }
+      } catch { /* show form anyway */ }
+
+      showOnly(formEl);
+    });
+
+    // ── Reload button (re-check after user clicks email link) ──
+    document.getElementById('reload-btn')?.addEventListener('click', async () => {
+      if (!currentUser) return;
+      const btn = document.getElementById('reload-btn');
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Checking…';
+      try {
+        await currentUser.reload();
+        if (auth.currentUser.emailVerified) {
+          showOnly(formEl);
+        } else {
+          showToast('Email not verified yet. Please click the link in your email.', 'error');
+          btn.disabled = false;
+          btn.textContent = "I've Clicked the Link — Continue";
+        }
+      } catch {
+        showToast('Could not check. Please try again.', 'error');
+        btn.disabled = false;
+        btn.textContent = "I've Clicked the Link — Continue";
+      }
+    });
+
+    // ── Form Submit ──
+    document.getElementById('verify-form')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const mobile    = document.getElementById('mobile-input')?.value.trim();
+      const altMobile = document.getElementById('alt-mobile-input')?.value.trim();
+      const dob       = document.getElementById('dob-input')?.value;
+      const gender    = document.getElementById('gender-select')?.value;
+      const city      = document.getElementById('city-input')?.value.trim();
+      const address   = document.getElementById('address-input')?.value.trim();
+
+      if (!mobile) {
+        showToast('Mobile number is required.', 'error');
+        document.getElementById('mobile-input').focus();
+        return;
+      }
+
+      const mobileRegex = /^[+]?[\d\s\-]{8,15}$/;
+      if (!mobileRegex.test(mobile)) {
+        showToast('Please enter a valid mobile number.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Saving your profile…';
+
+      try {
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          isVerified:  true,
+          mobileNumber:    mobile,
+          altMobileNumber: altMobile || '',
+          dateOfBirth:     dob       || '',
+          gender:          gender    || '',
+          city:            city      || '',
+          address:         address   || '',
+          verifiedAt:      new Date().toISOString(),
+        });
+
+        showToast('Profile completed! You are now verified ✔️', 'success');
+        setTimeout(() => showOnly(doneEl), 1200);
+
+      } catch (err) {
+        console.error(err);
+        showToast('Error saving details. Check Firestore rules.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Complete Verification ✔️';
+      }
+    });
+  </script>
+
+</body>
+</html>
