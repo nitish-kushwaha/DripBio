@@ -115,20 +115,6 @@
   </main>
 
   <script type="module" src="/js/dashboard.js"></script>
-  <script type="module">
-    // Wire up "View Public Page" button after auth loads
-    import { auth } from '/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getUserProfile } from '/js/auth.js';
-    onAuthStateChanged(auth, async user => {
-      if (!user) return;
-      const p = await getUserProfile(user.uid);
-      if (p) {
-        const btn = document.getElementById('view-public-btn');
-        if (btn) btn.href = `/${p.username}`;
-      }
-    });
-  </script>
 
 </body>
 </html>

@@ -28,9 +28,18 @@ const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // ── Bootstrap ────────────────────────────────────────────────
 requireAuth(async (user) => {
   currentUser    = user;
-  currentProfile = await getUserProfile(user.uid);
+  try {
+    currentProfile = await getUserProfile(user.uid);
+  } catch (err) {
+    console.error('DripBio: Failed to load profile', err);
+    showToast('Could not load profile. Check Firestore rules.', 'error');
+    return;
+  }
 
-  if (!currentProfile) { showToast('Could not load profile.', 'error'); return; }
+  if (!currentProfile) {
+    showToast('Profile not found. Please sign up again.', 'error');
+    return;
+  }
 
   bootstrapNavbar();
   bootstrapProfilePanel();
@@ -57,6 +66,10 @@ function bootstrapNavbar() {
 
   // Profile URL display
   setText('profile-url-display', `${window.location.hostname}/${username}`);
+
+  // View Public Page button
+  const viewBtn = $('view-public-btn');
+  if (viewBtn) viewBtn.href = `/${username}`;
 }
 
 // ── Profile Panel ────────────────────────────────────────────

@@ -16,7 +16,7 @@
   </div>
 
   <!-- Not found state -->
-  <div id="profile-not-found" class="profile-not-found hidden" style="display:none">
+  <div id="profile-not-found" class="profile-not-found" style="display:none">
     <div style="font-size:4rem;margin-bottom:1rem">🌑</div>
     <h2>Profile not found</h2>
     <p style="color:var(--text-muted);margin-top:0.5rem;font-size:0.9rem">
@@ -26,7 +26,7 @@
   </div>
 
   <!-- Profile wrapper (hidden until data loads) -->
-  <div id="profile-wrapper" class="profile-wrapper hidden" style="display:none">
+  <div id="profile-wrapper" class="profile-wrapper" style="display:none">
 
     <img id="profile-avatar" class="profile-avatar" src="" alt="Profile avatar" />
 
@@ -52,16 +52,7 @@
   </div>
 
   <script type="module" src="/js/profile.js"></script>
-  <script>
-    // Show elements by removing inline display:none after module sets class
-    document.addEventListener('DOMContentLoaded', () => {
-      // profile.js handles toggling 'hidden' class
-      // We just need to make sure elements with .hidden are visible when the class is removed
-      const style = document.createElement('style');
-      style.textContent = '.hidden { display: none !important; }';
-      document.head.appendChild(style);
-    });
-  </script>
+
 
 </body>
 </html>
