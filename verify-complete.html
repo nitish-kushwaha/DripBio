@@ -110,31 +110,28 @@
           <p class="field-hint">Used for account recovery only. Never shared publicly.</p>
         </div>
 
-        <!-- === Optional Details === -->
-        <div class="section-divider">Optional</div>
-
         <div style="display:flex;flex-direction:column;gap:1rem">
 
           <div class="form-group">
             <label for="alt-mobile-input">
-              Alternate Mobile <span class="optional-tag">optional</span>
+              Alternate Mobile
             </label>
             <input id="alt-mobile-input" type="tel" placeholder="+91 91234 56789"
-              pattern="[+]?[0-9\s\-]{8,15}" maxlength="16" />
+              pattern="[+]?[0-9\s\-]{8,15}" maxlength="16" required />
           </div>
 
           <div class="form-group">
             <label for="dob-input">
-              Date of Birth <span class="optional-tag">optional</span>
+              Date of Birth
             </label>
-            <input id="dob-input" type="date" />
+            <input id="dob-input" type="date" required />
           </div>
 
           <div class="form-group">
             <label for="gender-select">
-              Gender <span class="optional-tag">optional</span>
+              Gender
             </label>
-            <select id="gender-select">
+            <select id="gender-select" required>
               <option value="">Select…</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -145,16 +142,16 @@
 
           <div class="form-group">
             <label for="city-input">
-              City / Location <span class="optional-tag">optional</span>
+              City / Location
             </label>
-            <input id="city-input" type="text" placeholder="Mumbai, India" maxlength="80" />
+            <input id="city-input" type="text" placeholder="Mumbai, India" maxlength="80" required />
           </div>
 
           <div class="form-group">
             <label for="address-input">
-              Full Address <span class="optional-tag">optional</span>
+              Full Address
             </label>
-            <textarea id="address-input" placeholder="Street, City, State, PIN…" maxlength="300" rows="3"></textarea>
+            <textarea id="address-input" placeholder="Street, City, State, PIN…" maxlength="300" rows="3" required></textarea>
             <p class="field-hint">Stored privately — never shown on your public profile.</p>
           </div>
 
@@ -274,15 +271,18 @@
       const city      = document.getElementById('city-input')?.value.trim();
       const address   = document.getElementById('address-input')?.value.trim();
 
-      if (!mobile) {
-        showToast('Mobile number is required.', 'error');
-        document.getElementById('mobile-input').focus();
+      if (!mobile || !altMobile || !dob || !gender || !city || !address) {
+        showToast('Please fill in all mandatory fields.', 'error');
         return;
       }
 
       const mobileRegex = /^[+]?[\d\s\-]{8,15}$/;
       if (!mobileRegex.test(mobile)) {
         showToast('Please enter a valid mobile number.', 'error');
+        return;
+      }
+      if (!mobileRegex.test(altMobile)) {
+        showToast('Please enter a valid alternate mobile number.', 'error');
         return;
       }
 
@@ -294,11 +294,11 @@
         await updateDoc(doc(db, 'users', currentUser.uid), {
           isVerified:  true,
           mobileNumber:    mobile,
-          altMobileNumber: altMobile || '',
-          dateOfBirth:     dob       || '',
-          gender:          gender    || '',
-          city:            city      || '',
-          address:         address   || '',
+          altMobileNumber: altMobile,
+          dateOfBirth:     dob,
+          gender:          gender,
+          city:            city,
+          address:         address,
           verifiedAt:      new Date().toISOString(),
         });
 
