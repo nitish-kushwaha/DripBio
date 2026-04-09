@@ -58,6 +58,8 @@
     #form-state { display: none; }
     /* Done state */
     #done-state { text-align: center; padding: 1rem 0; display: none; }
+    /* Orphan state */
+    #orphan-state { text-align: center; padding: 1.5rem 0; display: none; }
   </style>
 </head>
 <body class="page-auth">
@@ -83,6 +85,19 @@
       <a href="/email-sent.html" class="btn btn-ghost w-full" style="margin-top:0.75rem">
         ← Back to Email Page
       </a>
+    </div>
+
+    <!-- Orphaned Account state (Auth exists, Firestore DB doc is missing) -->
+    <div id="orphan-state">
+      <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
+      <h2 style="font-size:1.4rem;margin-bottom:0.5rem">Account Data Missing</h2>
+      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem;line-height:1.6">
+        We found your login, but your database profile is missing. This usually happens if the database was cleared during testing.<br><br>
+        Please log out and <strong>Sign Up again</strong> with a new account.
+      </p>
+      <button id="orphan-logout-btn" class="btn btn-primary w-full">
+        Log Out & Sign Up 🚀
+      </button>
     </div>
 
     <!-- Profile Complete Form -->
@@ -191,9 +206,10 @@
     const notVerifiedEl = document.getElementById('not-verified-state');
     const formEl        = document.getElementById('form-state');
     const doneEl        = document.getElementById('done-state');
+    const orphanEl      = document.getElementById('orphan-state');
 
     const showOnly = el => {
-      [loadingEl, notVerifiedEl, formEl, doneEl].forEach(e => {
+      [loadingEl, notVerifiedEl, formEl, doneEl, orphanEl].forEach(e => {
         if(e) e.style.display = 'none';
       });
       if(el) {
@@ -229,14 +245,24 @@
       // Email IS verified — check Firestore for profile completion
       try {
         const snap = await getDoc(doc(db, 'users', freshUser.uid));
-        if (snap.exists() && snap.data().isVerified === true) {
+        if (!snap.exists()) {
+          showOnly(orphanEl);
+          return;
+        }
+        if (snap.data().isVerified === true) {
           showOnly(doneEl);
           return;
         }
-      } catch { /* show form anyway on Firestore error */ }
+      } catch (e) { console.error('Firestore Read Error:', e); /* show form anyway on transient error */ }
 
       showOnly(formEl);
     }
+
+    // Orphan state logout handling
+    document.getElementById('orphan-logout-btn')?.addEventListener('click', async () => {
+      await logOut();
+      window.location.href = '/signup.html';
+    });
 
     // ── Reload button (re-check after user clicks email link) ──
     document.getElementById('reload-btn')?.addEventListener('click', async () => {
