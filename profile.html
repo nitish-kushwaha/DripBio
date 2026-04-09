@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DripBio</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="page-profile">
+
+  <!-- Loading state -->
+  <div id="profile-loading" class="profile-loading">
+    <span class="spinner"></span>
+    <span>Loading profile…</span>
+  </div>
+
+  <!-- Not found state -->
+  <div id="profile-not-found" class="profile-not-found hidden" style="display:none">
+    <div style="font-size:4rem;margin-bottom:1rem">🌑</div>
+    <h2>Profile not found</h2>
+    <p style="color:var(--text-muted);margin-top:0.5rem;font-size:0.9rem">
+      This DripBio link doesn't exist (yet).
+    </p>
+    <a href="/signup.html" class="btn btn-primary" style="margin-top:1.5rem">Claim it free ✨</a>
+  </div>
+
+  <!-- Profile wrapper (hidden until data loads) -->
+  <div id="profile-wrapper" class="profile-wrapper hidden" style="display:none">
+
+    <img id="profile-avatar" class="profile-avatar" src="" alt="Profile avatar" />
+
+    <h1 id="profile-name" class="profile-name"></h1>
+    <p  id="profile-bio"  class="profile-bio"></p>
+
+    <!-- Links -->
+    <div id="profile-links" class="profile-links"></div>
+
+    <!-- Share button -->
+    <button id="share-btn" class="profile-share-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>
+      </svg>
+      Share This Page
+    </button>
+
+    <p class="profile-powered">
+      Powered by <a href="/">DripBio.bond</a> · <a href="/signup.html">Get yours free ✨</a>
+    </p>
+
+  </div>
+
+  <script type="module" src="/js/profile.js"></script>
+  <script>
+    // Show elements by removing inline display:none after module sets class
+    document.addEventListener('DOMContentLoaded', () => {
+      // profile.js handles toggling 'hidden' class
+      // We just need to make sure elements with .hidden are visible when the class is removed
+      const style = document.createElement('style');
+      style.textContent = '.hidden { display: none !important; }';
+      document.head.appendChild(style);
+    });
+  </script>
+
+</body>
+</html>

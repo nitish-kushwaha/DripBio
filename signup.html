@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — DripBio.bond</title>
+  <meta name="description" content="Create your free DripBio account and claim your unique link." />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="page-auth">
+
+  <div class="glass auth-card">
+
+    <div class="auth-logo">
+      <a href="/" class="gradient-text">DripBio<span style="font-size:0.8em">.</span>bond</a>
+    </div>
+
+    <h1 class="auth-title">Start dripping ✨</h1>
+    <p class="auth-subtitle">Claim your free link — takes 60 seconds</p>
+
+    <form class="auth-form" id="signup-form" novalidate>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label for="signup-username">Username</label>
+        <div class="input-group">
+          <span class="input-prefix">@</span>
+          <input
+            id="signup-username"
+            type="text"
+            placeholder="yourname"
+            autocomplete="off"
+            maxlength="20"
+            required
+          />
+          <span class="input-status" id="username-status"></span>
+        </div>
+        <small id="username-hint" style="font-size:0.75rem;color:var(--text-muted)">
+          3–20 chars · letters, numbers, underscore · <strong style="color:var(--neon-cyan)">dripbio.bond/yourname</strong>
+        </small>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="signup-email">Email</label>
+        <input
+          id="signup-email"
+          type="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="signup-password">Password</label>
+        <input
+          id="signup-password"
+          type="password"
+          placeholder="At least 6 characters"
+          autocomplete="new-password"
+          minlength="6"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full" id="signup-btn">
+        Create My DripBio ✨
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="/login.html">Log in</a>
+    </p>
+
+  </div>
+
+  <script type="module">
+    import { signUp, checkUsernameAvailable, isValidUsername, showToast } from '/js/auth.js';
+    import { auth }       from '/js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // Already logged in → go to dashboard
+    onAuthStateChanged(auth, user => {
+      if (user) window.location.href = '/dashboard.html';
+    });
+
+    // ── Real-time username availability check ──
+    const usernameInput = document.getElementById('signup-username');
+    const statusEl      = document.getElementById('username-status');
+    let usernameCheckTimer = null;
+    let usernameAvailable  = false;
+
+    usernameInput.addEventListener('input', () => {
+      clearTimeout(usernameCheckTimer);
+      const val = usernameInput.value.trim().toLowerCase();
+
+      if (!val) { statusEl.textContent = ''; usernameAvailable = false; return; }
+
+      if (!isValidUsername(val)) {
+        statusEl.textContent = '✗ Invalid';
+        statusEl.className   = 'input-status status-taken';
+        usernameAvailable    = false;
+        return;
+      }
+
+      statusEl.textContent = '…';
+      statusEl.className   = 'input-status status-checking';
+
+      usernameCheckTimer = setTimeout(async () => {
+        const available = await checkUsernameAvailable(val);
+        usernameAvailable = available;
+        statusEl.textContent = available ? '✓ Available!' : '✗ Taken';
+        statusEl.className   = `input-status ${available ? 'status-available' : 'status-taken'}`;
+      }, 500);
+    });
+
+    // ── Form Submit ──
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = usernameInput.value.trim().toLowerCase();
+      const email    = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const btn      = document.getElementById('signup-btn');
+
+      if (!username || !email || !password) { showToast('Please fill in all fields.', 'error'); return; }
+      if (!usernameAvailable)               { showToast('Please choose a valid, available username.', 'error'); return; }
+      if (password.length < 6)             { showToast('Password must be at least 6 characters.', 'error'); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Creating your DripBio…';
+
+      try {
+        await signUp(username, email, password);
+        showToast('Welcome to DripBio! 🎉', 'success');
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        showToast(friendlyError(err.code) || err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Create My DripBio ✨';
+      }
+    });
+
+    function friendlyError(code) {
+      const map = {
+        'auth/email-already-in-use': 'This email is already registered. Try logging in.',
+        'auth/invalid-email':        'Please enter a valid email address.',
+        'auth/weak-password':        'Password must be at least 6 characters.',
+      };
+      return map[code];
+    }
+  </script>
+
+</body>
+</html>

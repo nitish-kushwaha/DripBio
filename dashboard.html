@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — DripBio.bond</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="page-dashboard">
+
+  <!-- Navbar -->
+  <nav class="dash-nav">
+    <span class="dash-brand">DripBio<span style="color:var(--neon-cyan)">.</span>bond</span>
+    <div class="dash-nav-right">
+      <div class="user-pill">
+        <img id="user-pill-avatar" src="" alt="avatar" />
+        <span id="user-pill-name">@loading…</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logout-btn">Log Out</button>
+    </div>
+  </nav>
+
+  <!-- Dashboard 3-column layout -->
+  <main class="dash-layout">
+
+    <!-- ── LEFT: Profile Panel ── -->
+    <section class="glass panel">
+      <div class="panel-title">👤 <span>Profile</span></div>
+
+      <!-- Avatar -->
+      <div class="avatar-section">
+        <img id="profile-avatar-img" class="avatar-img" src="" alt="Your avatar" />
+        <p style="font-size:0.78rem;color:var(--text-muted)">Choose your avatar style</p>
+        <div class="avatar-styles">
+          <button class="avatar-style-btn" data-style="lorelei">Lorelei</button>
+          <button class="avatar-style-btn" data-style="micah">Micah</button>
+          <button class="avatar-style-btn" data-style="bottts">Bottts</button>
+          <button class="avatar-style-btn" data-style="avataaars">Avataaars</button>
+          <button class="avatar-style-btn" data-style="pixel-art">Pixel Art</button>
+        </div>
+      </div>
+
+      <!-- Profile form -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        <div class="form-group">
+          <label for="display-name-input">Display Name</label>
+          <input id="display-name-input" type="text" placeholder="Your Name" maxlength="40" />
+        </div>
+        <div class="form-group">
+          <label for="bio-input">Bio</label>
+          <textarea id="bio-input" placeholder="Creator · Dreamer · Builder ✨" maxlength="160"></textarea>
+        </div>
+        <button class="btn btn-primary w-full" id="save-profile-btn">Save Profile</button>
+      </div>
+
+      <!-- Your public URL -->
+      <div style="margin-top:var(--space-lg)">
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:var(--space-sm);text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Your Link</p>
+        <div class="share-url-box">
+          <span class="share-url-text" id="profile-url-display">dripbio.bond/…</span>
+          <button class="icon-btn" id="copy-link-btn" title="Copy link">📋</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CENTER: Links Panel ── -->
+    <section class="glass panel links-panel">
+      <div class="panel-title">🔗 <span>Your Links</span></div>
+
+      <!-- Add link form -->
+      <div class="add-link-form">
+        <div class="form-group">
+          <label for="link-title-input">Link Title</label>
+          <input id="link-title-input" type="text" placeholder="e.g. My YouTube Channel" maxlength="60" />
+        </div>
+        <div class="form-group">
+          <label for="link-url-input">URL</label>
+          <input id="link-url-input" type="url" placeholder="https://youtube.com/..." />
+        </div>
+        <button class="btn btn-primary" id="add-link-btn" style="align-self:flex-end">+ Add Link</button>
+      </div>
+
+      <!-- Links list (populated by dashboard.js) -->
+      <div id="links-list" class="links-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔗</div>
+          <p>Loading your links…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── RIGHT: Live Preview Panel ── -->
+    <section class="glass panel preview-panel">
+      <div class="panel-title">📱 <span>Live Preview</span></div>
+
+      <div class="preview-wrap">
+        <p class="preview-label" style="font-size:0.72rem;color:var(--text-muted)">This is how your page looks 👇</p>
+        <div class="preview-phone">
+          <div class="preview-content">
+            <img id="preview-avatar" class="preview-avatar" src="" alt="preview avatar" />
+            <div id="preview-name" class="preview-name">Your Name</div>
+            <div id="preview-bio" class="preview-bio">Your bio will appear here…</div>
+            <div id="preview-links" style="width:100%;display:flex;flex-direction:column;gap:0.45rem;margin-top:0.25rem">
+              <div style="font-size:0.62rem;color:var(--text-muted);text-align:center;padding:0.5rem">Links appear here</div>
+            </div>
+          </div>
+        </div>
+
+        <a id="view-public-btn" href="#" target="_blank" class="btn btn-ghost btn-sm w-full" style="margin-top:var(--space-sm)">
+          👁️ View Public Page
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="/js/dashboard.js"></script>
+  <script type="module">
+    // Wire up "View Public Page" button after auth loads
+    import { auth } from '/js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getUserProfile } from '/js/auth.js';
+    onAuthStateChanged(auth, async user => {
+      if (!user) return;
+      const p = await getUserProfile(user.uid);
+      if (p) {
+        const btn = document.getElementById('view-public-btn');
+        if (btn) btn.href = `/${p.username}`;
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+# DripBio.bond — Netlify Redirects
+# Known app pages are served as files (Netlify file-based routing takes priority).
+# Any unknown path (e.g., /username) is handled by profile.html,
+# which reads window.location.pathname to extract the username.
+
+/*  /profile.html  200
