@@ -51,65 +51,35 @@ const avatarUrl = (seed, style='lorelei') =>
 // ── Bootstrap ────────────────────────────────────────────────
 requireAuth(async user => {
   currentUser = user;
-  try { currentProfile = await getUserProfile(user.uid); }
-  catch (e) { console.error(e); showToast('Firestore error. Check rules!','error'); return; }
 
-  if (!currentProfile) { showOrphanError(user); return; }
+  // ── ENFORCE VERIFICATION ──
+  try { await user.reload(); } catch {}
+  const freshUser = auth.currentUser || user;
+  
+  if (!freshUser.emailVerified) {
+    window.location.href = '/email-sent.html';
+    return;
+  }
 
+  try { 
+    currentProfile = await getUserProfile(user.uid); 
+    if (!currentProfile || currentProfile.isVerified !== true) {
+      window.location.href = '/verify-complete.html';
+      return;
+    }
+  }
+  catch (e) { 
+    console.error(e); 
+    window.location.href = '/verify-complete.html';
+    return; 
+  }
+
+  // If we made it here, user is fully verified and profile exists!
   bootstrapNavbar();
   bootstrapProfile();
   bootstrapCustomize();
   subscribeLinks();
-
-  // Show email-not-verified banner if needed
-  try {
-    await auth.currentUser.reload();
-    if (!auth.currentUser.emailVerified) showEmailBanner();
-  } catch { /* non-blocking */ }
 });
-
-// ── Email Verification Banner ─────────────────────────
-function showEmailBanner() {
-  const banner = document.createElement('div');
-  banner.id = 'email-verify-banner';
-  banner.style.cssText = `
-    position:sticky;top:0;z-index:100;
-    background:linear-gradient(90deg,rgba(245,158,11,0.15),rgba(245,158,11,0.08));
-    border-bottom:1px solid rgba(245,158,11,0.35);
-    padding:0.65rem 1.5rem;
-    display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
-  `;
-  banner.innerHTML = `
-    <span style="font-size:1.1rem">⚠️</span>
-    <span style="flex:1;font-size:0.86rem;color:#fbbf24;font-weight:500">
-      Your email is not verified. Please check your inbox and click the verification link.
-    </span>
-    <a href="/verify-complete.html" style="padding:0.35rem 0.9rem;border-radius:9999px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;font-size:0.8rem;font-weight:600;white-space:nowrap">
-      Verify Now →
-    </a>
-    <button id="banner-resend" style="padding:0.35rem 0.9rem;border-radius:9999px;background:transparent;border:1px solid rgba(245,158,11,0.3);color:#fbbf24;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap">
-      Resend Email
-    </button>
-  `;
-  document.body.insertBefore(banner, document.body.firstChild);
-
-  let cooldown = false;
-  document.getElementById('banner-resend')?.addEventListener('click', async () => {
-    if (cooldown) return;
-    try {
-      await resendVerificationEmail(auth.currentUser);
-      showToast('Verification email sent! 📧', 'success');
-      cooldown = true;
-      const btn = document.getElementById('banner-resend');
-      if (btn) { btn.disabled=true; btn.textContent='Sent! (60s)'; }
-      setTimeout(() => {
-        cooldown=false;
-        const b = document.getElementById('banner-resend');
-        if (b) { b.disabled=false; b.textContent='Resend Email'; }
-      }, 60000);
-    } catch { showToast('Please wait before resending.','error'); }
-  });
-}
 
 // ── Orphaned Account ─────────────────────────────────────────
 function showOrphanError(user) {
