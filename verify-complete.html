@@ -196,8 +196,12 @@
     const doneEl        = document.getElementById('done-state');
 
     const showOnly = el => {
-      [loadingEl, notVerifiedEl, formEl, doneEl].forEach(e => e.style.display='none');
-      el.style.display='';
+      [loadingEl, notVerifiedEl, formEl, doneEl].forEach(e => {
+        if(e) e.style.display = 'none';
+      });
+      if(el) {
+        el.style.display = (el === loadingEl) ? 'flex' : 'block';
+      }
     };
 
     let currentUser = null;
