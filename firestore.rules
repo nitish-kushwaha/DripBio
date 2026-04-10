@@ -1,5 +1,5 @@
 # ============================================================
-# DripBio.bond — Firestore Security Rules (v3)
+# DripBio.bond — Firestore Security Rules (v4 - Admin Roles)
 # Paste ALL of this in:
 # Firebase Console → Firestore → Rules → Publish
 # ============================================================
@@ -7,16 +7,23 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+  
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
 
     // ── Users collection ──────────────────────────────────────
     match /users/{uid} {
-      allow read: if true;
+      // Public can get a specific user by ID (for profile rendering)
+      allow get: if true;
+      // ONLY admins can list the entire collection
+      allow list: if isAdmin();
 
       // Owner can create their own doc
       allow create: if request.auth != null && request.auth.uid == uid;
       
-      // Owner can update, but if they are verifying (isVerified == true), they MUST provide mandatory fields
-      allow update: if request.auth != null && request.auth.uid == uid
+      // Owner can update safely, or Admin can update anything
+      allow update: if (request.auth != null && request.auth.uid == uid
         && (
           (!('isVerified' in request.resource.data) || request.resource.data.isVerified == false) 
           || 
@@ -28,18 +35,21 @@ service cloud.firestore {
             'city' in request.resource.data &&
             'address' in request.resource.data
           )
-        );
-      allow delete: if false;
+        ))
+        || isAdmin();
+
+      allow delete: if isAdmin();
 
       // Links subcollection
       match /links/{linkId} {
         allow read: if true;
-        allow create: if request.auth != null && request.auth.uid == uid;
-        allow delete: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && (request.auth.uid == uid || isAdmin());
+        allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
 
-        // Owner can update fully; anyone can increment 'clicks' only
+        // Owner can update fully; anyone can increment 'clicks' only. Admin can update fully.
         allow update: if (request.auth != null && request.auth.uid == uid)
-          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])
+          || isAdmin();
       }
     }
 
@@ -49,8 +59,8 @@ service cloud.firestore {
       // Only allow create if username doc doesn't exist yet (server-side uniqueness)
       allow create: if request.auth != null
         && !exists(/databases/$(database)/documents/usernames/$(username));
-      allow update: if false;
-      allow delete: if false;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
   }

@@ -75,6 +75,10 @@ requireAuth(async user => {
   }
 
   // If we made it here, user is fully verified and profile exists!
+  if (currentProfile.isAdmin === true) {
+    const adminBtn = document.getElementById('admin-panel-btn');
+    if (adminBtn) adminBtn.style.display = 'inline-flex';
+  }
   bootstrapNavbar();
   bootstrapProfile();
   bootstrapCustomize();
