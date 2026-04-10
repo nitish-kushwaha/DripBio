@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /dashboard*
+Disallow: /email-sent*
+Disallow: /verify-complete*
+Disallow: /404*
+
+Sitemap: https://dripbio.bond/sitemap.xml
