@@ -25,7 +25,13 @@
     </div>
   </nav>
 
-  <main class="dash-layout">
+  <!-- Workspace Switcher -->
+  <div class="workspace-switcher" style="display:flex; justify-content:center; gap:10px; margin:20px 0 10px 0; padding: 0 20px;">
+    <button class="ws-btn active" id="ws-bio-btn" style="padding:10px 20px; border-radius:30px; border:1px solid rgba(255,255,255,0.1); background:var(--glass-bg); color:var(--text-main); cursor:pointer; font-weight:600; transition:all 0.2s">🔗 Bio Links</button>
+    <button class="ws-btn" id="ws-resume-btn" style="padding:10px 20px; border-radius:30px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:var(--text-muted); cursor:pointer; transition:all 0.2s">📄 Resume Builder</button>
+  </div>
+
+  <main class="dash-layout" id="workspace-bio">
 
     <!-- ── LEFT: Profile + Customize ── -->
     <section class="glass panel left-panel">
@@ -247,6 +253,63 @@
 
   </main>
 
+  <!-- ── WORKSPACE: RESUME BUILDER ── -->
+  <main class="dash-layout" id="workspace-resume" style="display:none">
+    
+    <!-- LEFT: Resume Blocks Drawer -->
+    <section class="glass panel left-panel">
+      <div class="panel-title">🧩 <span>Add Blocks</span></div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:15px">Build your standalone resume using these blocks.</p>
+      
+      <div class="resume-block-drawer" style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-outline w-full resume-add-btn" data-type="hero" style="text-align:left; justify-content:flex-start">✨ Hero Section</button>
+        <button class="btn btn-outline w-full resume-add-btn" data-type="experience" style="text-align:left; justify-content:flex-start">💼 Experience</button>
+        <button class="btn btn-outline w-full resume-add-btn" data-type="education" style="text-align:left; justify-content:flex-start">🎓 Education</button>
+        <button class="btn btn-outline w-full resume-add-btn" data-type="skills" style="text-align:left; justify-content:flex-start">🛠️ Skills Grid</button>
+        <button class="btn btn-outline w-full resume-add-btn" data-type="projects" style="text-align:left; justify-content:flex-start">🚀 Project Gallery</button>
+        <button class="btn btn-outline w-full resume-add-btn" data-type="contact" style="text-align:left; justify-content:flex-start">✉️ Contact Form</button>
+      </div>
+
+      <hr style="border-color: rgba(255,255,255,0.1); margin: 25px 0;">
+      
+      <div class="panel-title">🎨 <span>Resume Theme</span></div>
+      <div class="resume-theme-picker" style="margin-top:10px">
+        <select id="resume-theme-select" style="width:100%; background:rgba(0,0,0,0.3); color:var(--text-main); border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:8px; font-family:inherit; outline:none">
+          <option value="modern-dark">Modern Dark</option>
+          <option value="minimal-light">Minimal Light</option>
+          <option value="glassmorphism">Glassmorphism</option>
+        </select>
+        <button class="btn btn-primary w-full" id="save-resume-settings-btn" style="margin-top:15px">Save Resume Settings</button>
+      </div>
+    </section>
+
+    <!-- CENTER: Active Blocks Canvas -->
+    <section class="glass panel links-panel">
+      <div class="panel-title">📄 <span>Resume Layout</span>
+        <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto">Drag to reorder</span>
+      </div>
+      
+      <div id="resume-blocks-list" class="links-list" style="margin-top:10px">
+        <div class="empty-state"><div class="empty-state-icon">📄</div><p>Loading...</p></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Live Preview -->
+    <section class="glass panel preview-panel">
+      <div class="panel-title">📱 <span>Live Preview</span></div>
+      <div class="preview-wrap">
+        <div class="preview-phone" id="resume-preview-container" style="padding: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none;">
+          <!-- Blocks rendered here -->
+          <div id="resume-preview-content" style="width:100%; min-height:100%; display:flex; flex-direction:column; background:var(--p-bg, #0d0d0d)"></div>
+        </div>
+        <a id="view-resume-btn" href="#" target="_blank" class="btn btn-ghost btn-sm w-full" style="margin-top:var(--space-sm)">
+          👁️ View Public Resume
+        </a>
+      </div>
+    </section>
+
+  </main>
+
   <!-- Mobile Bottom Navigation -->
   <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
     <button class="mobile-nav-btn active" data-panel="left-panel" id="mob-nav-profile">
@@ -265,10 +328,40 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script type="module" src="/js/dashboard.js"></script>
+  <script type="module" src="/js/resume-builder.js"></script>
 
-  <!-- Mobile Panel Switcher -->
+  <!-- Workspace & Mobile Switcher -->
   <script>
     (function() {
+      // Workspace Switcher
+      const wsBioBtn = document.getElementById('ws-bio-btn');
+      const wsResumeBtn = document.getElementById('ws-resume-btn');
+      const wsBio = document.getElementById('workspace-bio');
+      const wsResume = document.getElementById('workspace-resume');
+
+      if (wsBioBtn && wsResumeBtn) {
+        wsBioBtn.addEventListener('click', () => {
+          wsBioBtn.classList.add('active');
+          wsResumeBtn.classList.remove('active');
+          wsBioBtn.style.background = 'var(--glass-bg)';
+          wsBioBtn.style.color = 'var(--text-main)';
+          wsResumeBtn.style.background = 'transparent';
+          wsResumeBtn.style.color = 'var(--text-muted)';
+          wsBio.style.display = '';
+          wsResume.style.display = 'none';
+        });
+        wsResumeBtn.addEventListener('click', () => {
+          wsResumeBtn.classList.add('active');
+          wsBioBtn.classList.remove('active');
+          wsResumeBtn.style.background = 'var(--glass-bg)';
+          wsResumeBtn.style.color = 'var(--text-main)';
+          wsBioBtn.style.background = 'transparent';
+          wsBioBtn.style.color = 'var(--text-muted)';
+          wsBio.style.display = 'none';
+          wsResume.style.display = '';
+        });
+      }
+
       const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
       function initMobileNav() {
         const btns = document.querySelectorAll('.mobile-nav-btn');

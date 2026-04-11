@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume</title>
+  <meta name="description" content="View my dynamic professional resume portfolio." />
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="page-resume">
+  
+  <div id="resume-loading" class="profile-loading">
+    <span class="spinner"></span>
+    <span>Loading Resume…</span>
+  </div>
+
+  <div id="resume-not-found" class="profile-not-found" style="display:none">
+    <div style="font-size:4rem;margin-bottom:1rem">📄</div>
+    <h2>Resume not found</h2>
+    <p style="color:var(--text-muted);margin-top:0.5rem;font-size:0.9rem">
+      This resume doesn't exist or is empty.
+    </p>
+    <a href="/" class="btn btn-primary" style="margin-top:1.5rem">Build your own free ✨</a>
+  </div>
+
+  <!-- The actual resume canvas -->
+  <main id="resume-wrapper" style="display:none; max-width:700px; margin:0 auto; padding:60px 20px; font-family:'Inter', sans-serif;">
+     <!-- Blocks injected here -->
+  </main>
+  
+  <footer style="text-align:center; margin-top:50px; font-size:0.75rem; color:var(--text-muted); padding-bottom: 30px;">
+    Powered by <a href="/" style="color:inherit">DripBio.bond</a>
+  </footer>
+
+  <script type="module" src="/js/resume-public.js"></script>
+</body>
+</html>
