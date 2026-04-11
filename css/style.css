@@ -788,19 +788,304 @@ body.page-404 {
   .dash-layout { grid-template-columns: 270px 1fr; }
   .preview-panel { display: none; }
 }
+
+/* ── Mobile Bottom Nav (hidden on desktop) ── */
+.mobile-bottom-nav {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .dash-layout { grid-template-columns: 1fr; }
-  .preview-panel { display: block; }
-  .panel { position: static; }
-  .preview-phone { width: 100%; border-radius: var(--radius-xl); min-height: 360px; }
+  /* ── Navbar Mobile ── */
+  .dash-nav {
+    padding: 0.65rem 0.8rem;
+  }
+  .dash-brand {
+    font-size: 1.1rem;
+  }
+  .dash-nav-right {
+    gap: var(--space-sm);
+  }
+  .user-pill {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
+  }
+  .user-pill img {
+    width: 18px;
+    height: 18px;
+  }
+  .user-pill span {
+    display: none;
+  }
+  #admin-panel-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.72rem;
+  }
+  #logout-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.72rem;
+  }
+
+  /* ── Dashboard Layout ── */
+  .dash-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: var(--space-sm);
+    padding-bottom: 5.5rem; /* space for bottom nav */
+  }
+
+  /* ── Panels: hide/show with mobile nav ── */
+  .panel {
+    position: static;
+    max-height: none;
+    border-radius: var(--radius-md);
+  }
+  .left-panel {
+    max-height: none;
+    overflow-y: visible;
+    position: static;
+  }
+  .left-panel,
+  .links-panel,
+  .preview-panel {
+    display: none;
+    animation: fadeInMobile 0.3s ease;
+  }
+  .left-panel.mobile-active,
+  .links-panel.mobile-active,
+  .preview-panel.mobile-active {
+    display: block;
+  }
+
+  /* ── Mobile Bottom Nav ── */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--border-glass);
+    padding: 0.45rem 0.5rem;
+    padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));
+    justify-content: space-around;
+    align-items: center;
+    gap: 4px;
+  }
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-primary);
+    font-size: 0.62rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex: 1;
+    max-width: 90px;
+    letter-spacing: 0.02em;
+  }
+  .mobile-nav-btn .nav-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+    transition: transform var(--transition-fast);
+  }
+  .mobile-nav-btn.active {
+    color: var(--neon-purple);
+    background: rgba(168, 85, 247, 0.12);
+  }
+  .mobile-nav-btn.active .nav-icon {
+    transform: scale(1.15);
+  }
+  .mobile-nav-btn:not(.active):active {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(0.95);
+  }
+
+  /* ── Preview Panel Mobile ── */
+  .preview-panel {
+    border: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .preview-wrap {
+    padding: var(--space-sm) 0;
+  }
+  .preview-phone {
+    width: 100%;
+    max-width: 320px;
+    border-radius: var(--radius-xl);
+    min-height: 420px;
+    margin: 0 auto;
+  }
+
+  /* ── Forms on Mobile ── */
+  .add-link-form {
+    padding: var(--space-sm);
+  }
+  input, textarea, select {
+    font-size: 16px; /* prevents iOS zoom */
+    padding: 0.65rem 0.85rem;
+  }
+
+  /* ── Link Items Mobile ── */
+  .link-item {
+    padding: 0.65rem var(--space-sm);
+    gap: 6px;
+  }
+  .link-item-title {
+    font-size: 0.82rem;
+  }
+  .link-item-url {
+    font-size: 0.65rem;
+  }
+  .link-item-clicks {
+    font-size: 0.65rem;
+    margin-right: 4px;
+  }
+  .link-item-actions {
+    gap: 2px;
+  }
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.78rem;
+  }
+
+  /* ── Panel Tab Mobile ── */
+  .panel-tabs {
+    margin-bottom: var(--space-md);
+  }
+
+  /* ── Avatar Section Mobile ── */
+  .avatar-styles {
+    gap: 4px;
+  }
+  .avatar-style-btn {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.65rem;
+  }
+  .avatar-img {
+    width: 65px;
+    height: 65px;
+  }
+
+  /* ── Share URL Box ── */
+  .share-url-box {
+    padding: 0.45rem 0.7rem;
+  }
+  .share-url-text {
+    font-size: 0.68rem;
+  }
+
+  /* ── Theme Grid Mobile ── */
+  .theme-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+  .theme-swatch {
+    height: 34px;
+  }
+  .theme-swatch-name {
+    font-size: 0.52rem;
+  }
+
+  /* ── Font Picker Mobile ── */
+  .font-opt {
+    padding: 0.5rem var(--space-sm);
+    font-size: 0.82rem;
+  }
+
+  /* ── Social Row Mobile ── */
+  .social-row input {
+    font-size: 0.75rem;
+    padding: 0.45rem 0.65rem;
+  }
+
+  /* ── Button Pickers Mobile ── */
+  .pick-opt {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.68rem;
+  }
+
+  /* ── Customize Section Mobile ── */
+  .customize-section {
+    gap: var(--space-md);
+  }
+
+  /* ── Panel Title Mobile ── */
+  .panel-title {
+    font-size: 0.85rem;
+    margin-bottom: var(--space-md);
+  }
+  .panel-title span {
+    font-size: 0.92rem;
+  }
+
+  /* ── Modal Mobile ── */
+  .modal-overlay {
+    padding: var(--space-md);
+    align-items: flex-end;
+  }
+  .modal {
+    max-width: 100%;
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    animation: slideInUpModal 0.35s ease;
+  }
+
+  /* ── Toast Mobile ── */
+  .toast-container {
+    bottom: 5.5rem; /* above bottom nav */
+    right: var(--space-sm);
+    left: var(--space-sm);
+  }
+  .toast {
+    min-width: auto;
+    font-size: 0.82rem;
+  }
+
+  /* ── General Landing Mobile ── */
   .navbar { padding: 0.9rem 1rem; }
   .hero-title { font-size: 2.2rem; }
   .cta-card { padding: var(--space-xl); }
 }
+
 @media (max-width: 480px) {
   .auth-card { padding: var(--space-xl) var(--space-lg); }
   .container { padding: 0 var(--space-md); }
   .hero-inner { padding: 0 var(--space-md); }
+
+  /* Even smaller adjustments */
+  .dash-layout {
+    padding: var(--space-xs);
+    padding-bottom: 5.5rem;
+  }
+  .panel {
+    padding: var(--space-md);
+  }
+  .preview-phone {
+    max-width: 280px;
+    min-height: 380px;
+  }
+}
+
+@keyframes fadeInMobile {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInUpModal {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ══════════════════════════════════

@@ -180,8 +180,103 @@
 
   </main>
 
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" data-panel="left-panel" id="mob-nav-profile">
+      <span class="nav-icon">👤</span>
+      <span>Profile</span>
+    </button>
+    <button class="mobile-nav-btn" data-panel="links-panel" id="mob-nav-links">
+      <span class="nav-icon">🔗</span>
+      <span>Links</span>
+    </button>
+    <button class="mobile-nav-btn" data-panel="preview-panel" id="mob-nav-preview">
+      <span class="nav-icon">📱</span>
+      <span>Preview</span>
+    </button>
+  </nav>
+
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script type="module" src="/js/dashboard.js"></script>
+
+  <!-- Mobile Panel Switcher -->
+  <script>
+    (function() {
+      const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+      function initMobileNav() {
+        const btns = document.querySelectorAll('.mobile-nav-btn');
+        const panels = {
+          'left-panel': document.querySelector('.left-panel'),
+          'links-panel': document.querySelector('.links-panel'),
+          'preview-panel': document.querySelector('.preview-panel'),
+        };
+
+        function switchPanel(panelKey) {
+          // Remove active from all buttons
+          btns.forEach(b => b.classList.remove('active'));
+          // Hide all panels
+          Object.values(panels).forEach(p => {
+            if (p) p.classList.remove('mobile-active');
+          });
+          // Activate selected
+          const activeBtn = document.querySelector(`[data-panel="${panelKey}"]`);
+          if (activeBtn) activeBtn.classList.add('active');
+          if (panels[panelKey]) {
+            panels[panelKey].classList.add('mobile-active');
+            // Scroll to top when switching
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+
+        btns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            switchPanel(btn.dataset.panel);
+          });
+        });
+
+        // Set default active panel on mobile
+        if (isMobile()) {
+          switchPanel('left-panel');
+        }
+      }
+
+      // Handle resize: restore panels on desktop
+      function handleResize() {
+        const allPanels = document.querySelectorAll('.left-panel, .links-panel, .preview-panel');
+        if (!isMobile()) {
+          // Desktop: remove all mobile classes
+          allPanels.forEach(p => p.classList.remove('mobile-active'));
+        } else {
+          // Mobile: re-apply current active panel
+          const activeBtn = document.querySelector('.mobile-nav-btn.active');
+          if (activeBtn) {
+            const panelKey = activeBtn.dataset.panel;
+            allPanels.forEach(p => p.classList.remove('mobile-active'));
+            const pMap = {
+              'left-panel': '.left-panel',
+              'links-panel': '.links-panel',
+              'preview-panel': '.preview-panel'
+            };
+            document.querySelector(pMap[panelKey])?.classList.add('mobile-active');
+          }
+        }
+      }
+
+      // Init on DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileNav);
+      } else {
+        initMobileNav();
+      }
+
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(handleResize, 150);
+      });
+    })();
+  </script>
 
 </body>
 </html>
