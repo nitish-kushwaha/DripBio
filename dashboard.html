@@ -20,18 +20,46 @@
         <img id="user-pill-avatar" src="" alt="avatar" />
         <span id="user-pill-name">@loading…</span>
       </div>
+      <button class="btn btn-ghost btn-sm" id="home-btn" style="display:none; font-size:1.1rem" title="Back to Tools">🏠</button>
       <a href="/admin.html" class="btn btn-ghost btn-sm" id="admin-panel-btn" style="display:none; border-color:var(--neon-cyan); color:var(--neon-cyan)">Admin</a>
       <button class="btn btn-ghost btn-sm" id="logout-btn">Log Out</button>
     </div>
   </nav>
 
+  <!-- Tool Selection View -->
+  <div id="tool-selection-view" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; gap:30px; text-align:center; padding: 20px;">
+    <div>
+      <h1 style="font-size:2.5rem; margin-bottom:10px;">Welcome to your Workspace</h1>
+      <p style="color:var(--text-muted); font-size:1.1rem;">What do you want to build today?</p>
+    </div>
+    <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center; width:100%; max-width:800px;">
+      
+      <!-- Bio Link Card -->
+      <div id="choose-bio-card" class="glass panel" style="flex:1; min-width:280px; padding:40px 20px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; border:1px solid rgba(168,85,247,0.3);">
+        <div style="font-size:4rem; margin-bottom:15px;">🔗</div>
+        <h2 style="font-size:1.5rem; margin-bottom:10px;">Link-in-Bio</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Create a beautiful, customizable page for all your important links.</p>
+        <button class="btn btn-primary w-full">Edit Bio Links</button>
+      </div>
+
+      <!-- Resume Builder Card -->
+      <div id="choose-resume-card" class="glass panel" style="flex:1; min-width:280px; padding:40px 20px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; border:1px solid rgba(6,182,212,0.3);">
+        <div style="font-size:4rem; margin-bottom:15px;">📄</div>
+        <h2 style="font-size:1.5rem; margin-bottom:10px;">Standalone Resume</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Build a professional, blocks-based portfolio resume website.</p>
+        <button class="btn btn-primary w-full" style="background:var(--neon-cyan)">Open Resume Builder</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Workspace Switcher -->
-  <div class="workspace-switcher" style="display:flex; justify-content:center; gap:10px; margin:20px 0 10px 0; padding: 0 20px;">
+  <div class="workspace-switcher" id="workspace-switcher" style="display:none; justify-content:center; gap:10px; margin:20px 0 10px 0; padding: 0 20px;">
     <button class="ws-btn active" id="ws-bio-btn" style="padding:10px 20px; border-radius:30px; border:1px solid rgba(255,255,255,0.1); background:var(--glass-bg); color:var(--text-main); cursor:pointer; font-weight:600; transition:all 0.2s">🔗 Bio Links</button>
     <button class="ws-btn" id="ws-resume-btn" style="padding:10px 20px; border-radius:30px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:var(--text-muted); cursor:pointer; transition:all 0.2s">📄 Resume Builder</button>
   </div>
 
-  <main class="dash-layout" id="workspace-bio">
+  <main class="dash-layout" id="workspace-bio" style="display:none">
 
     <!-- ── LEFT: Profile + Customize ── -->
     <section class="glass panel left-panel">
@@ -333,11 +361,55 @@
   <!-- Workspace & Mobile Switcher -->
   <script>
     (function() {
-      // Workspace Switcher
       const wsBioBtn = document.getElementById('ws-bio-btn');
       const wsResumeBtn = document.getElementById('ws-resume-btn');
       const wsBio = document.getElementById('workspace-bio');
       const wsResume = document.getElementById('workspace-resume');
+      const wsSwitcher = document.getElementById('workspace-switcher');
+      const toolSelection = document.getElementById('tool-selection-view');
+      const chooseBio = document.getElementById('choose-bio-card');
+      const chooseResume = document.getElementById('choose-resume-card');
+      const homeBtn = document.getElementById('home-btn');
+
+      // Card hover effects
+      if(chooseBio) {
+        chooseBio.addEventListener('mouseenter', () => chooseBio.style.transform = 'translateY(-5px)');
+        chooseBio.addEventListener('mouseleave', () => chooseBio.style.transform = 'translateY(0)');
+      }
+      if(chooseResume) {
+        chooseResume.addEventListener('mouseenter', () => chooseResume.style.transform = 'translateY(-5px)');
+        chooseResume.addEventListener('mouseleave', () => chooseResume.style.transform = 'translateY(0)');
+      }
+
+      function enterWorkspace(type) {
+        toolSelection.style.display = 'none';
+        wsSwitcher.style.display = 'flex';
+        homeBtn.style.display = 'inline-flex';
+        const bottomNav = document.getElementById('mobile-bottom-nav');
+        if(bottomNav && isMobile()) bottomNav.style.display = 'flex';
+
+        if(type === 'bio') {
+          wsBioBtn.click();
+        } else {
+          wsResumeBtn.click();
+        }
+      }
+
+      // Home button to go back to selection
+      if(homeBtn) {
+        homeBtn.addEventListener('click', () => {
+          wsSwitcher.style.display = 'none';
+          wsBio.style.display = 'none';
+          wsResume.style.display = 'none';
+          homeBtn.style.display = 'none';
+          const bottomNav = document.getElementById('mobile-bottom-nav');
+          if(bottomNav) bottomNav.style.display = 'none';
+          toolSelection.style.display = 'flex';
+        });
+      }
+
+      if(chooseBio) chooseBio.addEventListener('click', () => enterWorkspace('bio'));
+      if(chooseResume) chooseResume.addEventListener('click', () => enterWorkspace('resume'));
 
       if (wsBioBtn && wsResumeBtn) {
         wsBioBtn.addEventListener('click', () => {
@@ -378,7 +450,12 @@
           if (panels[panelKey]) { panels[panelKey].classList.add('mobile-active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
         }
         btns.forEach(btn => btn.addEventListener('click', () => switchPanel(btn.dataset.panel)));
-        if (isMobile()) switchPanel('left-panel');
+        if (isMobile()) {
+          switchPanel('left-panel');
+          // Hide bottom nav initially since we are on tool selection
+          const bottomNav = document.getElementById('mobile-bottom-nav');
+          if(bottomNav) bottomNav.style.display = 'none';
+        }
       }
       function handleResize() {
         const allPanels = document.querySelectorAll('.left-panel, .links-panel, .preview-panel');
