@@ -33,7 +33,7 @@
       <!-- Tabs -->
       <div class="panel-tabs">
         <button class="panel-tab active" id="tab-btn-profile">👤 Profile</button>
-        <button class="panel-tab"        id="tab-btn-customize">🎨 Customize</button>
+        <button class="panel-tab"        id="tab-btn-customize">🎨 Design</button>
       </div>
 
       <!-- ── TAB: Profile ── -->
@@ -68,33 +68,69 @@
             <span class="share-url-text" id="profile-url-display">dripbio.bond/…</span>
             <button class="icon-btn" id="copy-link-btn" title="Copy">📋</button>
           </div>
+          <a id="view-public-btn" href="#" target="_blank" class="btn btn-ghost btn-sm w-full" style="margin-top:var(--space-sm)">
+            👁️ View Public Page
+          </a>
+        </div>
+
+        <!-- Social Links (in Profile tab) -->
+        <div style="margin-top:var(--space-lg)">
+          <p class="cust-label">📲 Social Links</p>
+          <div id="socials-form" style="display:flex;flex-direction:column;gap:6px"></div>
+          <button class="btn btn-ghost btn-sm w-full" id="save-socials-btn" style="margin-top:10px">
+            Save Social Links
+          </button>
         </div>
       </div>
 
-      <!-- ── TAB: Customize ── -->
+      <!-- ── TAB: Design (Customize) ── -->
       <div id="tab-customize" style="display:none">
         <div class="customize-section">
 
-          <!-- Theme -->
-          <div>
-            <div class="cust-label">🌈 Theme</div>
+          <!-- 1. Theme -->
+          <div class="cust-block">
+            <div class="cust-label">🌈 Theme <span class="cust-hint">25 themes</span></div>
             <div class="theme-grid" id="theme-grid"></div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
-              <label style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;text-transform:none;letter-spacing:0;margin:0">Custom BG</label>
-              <input type="color" id="custom-bg-input" value="#0f0f0f"
-                style="flex:1;height:34px;border-radius:8px;border:1px solid var(--border-glass);background:transparent;cursor:pointer;padding:2px 4px" />
+            <div class="color-row" style="margin-top:12px">
+              <label class="color-label">Custom BG</label>
+              <input type="color" id="custom-bg-input" value="#0f0f0f" class="color-input" />
             </div>
           </div>
 
-          <!-- Font -->
-          <div>
+          <!-- 2. Accent & Text Colors -->
+          <div class="cust-block">
+            <div class="cust-label">🎨 Custom Colors</div>
+            <div class="color-row">
+              <label class="color-label">Accent</label>
+              <input type="color" id="custom-accent-input" value="#a855f7" class="color-input" />
+            </div>
+            <div class="color-row" style="margin-top:8px">
+              <label class="color-label">Text</label>
+              <input type="color" id="custom-text-input" value="#f1f5f9" class="color-input" />
+            </div>
+          </div>
+
+          <!-- 3. Font -->
+          <div class="cust-block">
             <div class="cust-label">✍️ Typography</div>
             <div id="font-picker" style="display:flex;flex-direction:column;gap:5px"></div>
           </div>
 
-          <!-- Button Shape -->
-          <div>
-            <div class="cust-label">📐 Button Shape</div>
+          <!-- 4. Layout -->
+          <div class="cust-block">
+            <div class="cust-label">📐 Layout Style</div>
+            <div class="pick-row pick-2x2" id="layout-picker"></div>
+          </div>
+
+          <!-- 5. Avatar Shape -->
+          <div class="cust-block">
+            <div class="cust-label">🧩 Avatar Shape</div>
+            <div class="pick-row" id="avatar-shape-picker"></div>
+          </div>
+
+          <!-- 6. Button Shape -->
+          <div class="cust-block">
+            <div class="cust-label">📦 Button Shape</div>
             <div class="pick-row" id="btn-shape-picker">
               <button class="pick-opt" data-shape="soft"  style="border-radius:8px">Soft</button>
               <button class="pick-opt" data-shape="pill"  style="border-radius:20px">Pill</button>
@@ -102,23 +138,54 @@
             </div>
           </div>
 
-          <!-- Button Fill -->
-          <div>
-            <div class="cust-label">🎨 Button Fill</div>
+          <!-- 7. Button Fill -->
+          <div class="cust-block">
+            <div class="cust-label">🎭 Button Fill</div>
             <div class="pick-row" id="btn-fill-picker">
               <button class="pick-opt" data-fill="glass">Glass</button>
               <button class="pick-opt" data-fill="solid">Solid</button>
               <button class="pick-opt" data-fill="outline">Outline</button>
+              <button class="pick-opt" data-fill="neon">Neon</button>
             </div>
           </div>
 
-          <!-- Social Links -->
-          <div>
-            <div class="cust-label">📲 Social Links</div>
-            <div id="socials-form" style="display:flex;flex-direction:column;gap:6px"></div>
-            <button class="btn btn-ghost btn-sm w-full" id="save-socials-btn" style="margin-top:10px">
-              Save Social Links
-            </button>
+          <!-- 8. Button Size -->
+          <div class="cust-block">
+            <div class="cust-label">📏 Button Size</div>
+            <div class="pick-row" id="btn-size-picker">
+              <button class="pick-opt" data-size="small">Small</button>
+              <button class="pick-opt" data-size="medium">Medium</button>
+              <button class="pick-opt" data-size="large">Large</button>
+            </div>
+          </div>
+
+          <!-- 9. Page Spacing -->
+          <div class="cust-block">
+            <div class="cust-label">↕️ Spacing</div>
+            <div class="pick-row" id="spacing-picker"></div>
+          </div>
+
+          <!-- 10. Card Width -->
+          <div class="cust-block">
+            <div class="cust-label">↔️ Card Width</div>
+            <div class="pick-row" id="width-picker">
+              <button class="pick-opt" data-width="narrow">Narrow</button>
+              <button class="pick-opt" data-width="medium">Medium</button>
+              <button class="pick-opt" data-width="wide">Wide</button>
+            </div>
+          </div>
+
+          <!-- 11. Page Effect -->
+          <div class="cust-block">
+            <div class="cust-label">✨ Page Effect</div>
+            <div class="pick-row pick-wrap" id="effect-picker"></div>
+          </div>
+
+          <!-- 12. Custom CSS -->
+          <div class="cust-block">
+            <div class="cust-label">💻 Custom CSS <span class="cust-hint">Advanced</span></div>
+            <textarea id="custom-css-input" placeholder="/* Your custom CSS here */&#10;.profile-name { font-size: 2rem; }" style="min-height:90px;font-family:'Roboto Mono',monospace;font-size:0.75rem;border-color:rgba(168,85,247,0.3);resize:vertical"></textarea>
+            <p style="font-size:0.65rem;color:var(--text-muted);margin-top:4px">Applied to your public page only. Auto-saves.</p>
           </div>
 
         </div>
@@ -172,7 +239,7 @@
             </div>
           </div>
         </div>
-        <a id="view-public-btn" href="#" target="_blank" class="btn btn-ghost btn-sm w-full" style="margin-top:var(--space-sm)">
+        <a id="view-public-btn-preview" href="#" target="_blank" class="btn btn-ghost btn-sm w-full" style="margin-top:var(--space-sm)">
           👁️ View Public Page
         </a>
       </div>
@@ -203,78 +270,40 @@
   <script>
     (function() {
       const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
-
       function initMobileNav() {
         const btns = document.querySelectorAll('.mobile-nav-btn');
         const panels = {
-          'left-panel': document.querySelector('.left-panel'),
-          'links-panel': document.querySelector('.links-panel'),
+          'left-panel':    document.querySelector('.left-panel'),
+          'links-panel':   document.querySelector('.links-panel'),
           'preview-panel': document.querySelector('.preview-panel'),
         };
-
         function switchPanel(panelKey) {
-          // Remove active from all buttons
           btns.forEach(b => b.classList.remove('active'));
-          // Hide all panels
-          Object.values(panels).forEach(p => {
-            if (p) p.classList.remove('mobile-active');
-          });
-          // Activate selected
+          Object.values(panels).forEach(p => { if (p) p.classList.remove('mobile-active'); });
           const activeBtn = document.querySelector(`[data-panel="${panelKey}"]`);
           if (activeBtn) activeBtn.classList.add('active');
-          if (panels[panelKey]) {
-            panels[panelKey].classList.add('mobile-active');
-            // Scroll to top when switching
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
+          if (panels[panelKey]) { panels[panelKey].classList.add('mobile-active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
         }
-
-        btns.forEach(btn => {
-          btn.addEventListener('click', () => {
-            switchPanel(btn.dataset.panel);
-          });
-        });
-
-        // Set default active panel on mobile
-        if (isMobile()) {
-          switchPanel('left-panel');
-        }
+        btns.forEach(btn => btn.addEventListener('click', () => switchPanel(btn.dataset.panel)));
+        if (isMobile()) switchPanel('left-panel');
       }
-
-      // Handle resize: restore panels on desktop
       function handleResize() {
         const allPanels = document.querySelectorAll('.left-panel, .links-panel, .preview-panel');
-        if (!isMobile()) {
-          // Desktop: remove all mobile classes
-          allPanels.forEach(p => p.classList.remove('mobile-active'));
-        } else {
-          // Mobile: re-apply current active panel
+        if (!isMobile()) { allPanels.forEach(p => p.classList.remove('mobile-active')); }
+        else {
           const activeBtn = document.querySelector('.mobile-nav-btn.active');
           if (activeBtn) {
             const panelKey = activeBtn.dataset.panel;
             allPanels.forEach(p => p.classList.remove('mobile-active'));
-            const pMap = {
-              'left-panel': '.left-panel',
-              'links-panel': '.links-panel',
-              'preview-panel': '.preview-panel'
-            };
+            const pMap = { 'left-panel':'.left-panel','links-panel':'.links-panel','preview-panel':'.preview-panel' };
             document.querySelector(pMap[panelKey])?.classList.add('mobile-active');
           }
         }
       }
-
-      // Init on DOM ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMobileNav);
-      } else {
-        initMobileNav();
-      }
-
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMobileNav);
+      else initMobileNav();
       let resizeTimer;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(handleResize, 150);
-      });
+      window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(handleResize, 150); });
     })();
   </script>
 
